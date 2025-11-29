@@ -1,0 +1,6 @@
+@Tailoring.API_HostAddress = http://localhost:5167
+
+GET {{Tailoring.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
