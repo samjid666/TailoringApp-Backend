@@ -8,6 +8,9 @@ namespace Tailoring.Core.Interfaces
         Task<T?> GetByIdAsync(int id);
         Task<IReadOnlyList<T>> GetAllAsync();
         Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> predicate);
+        Task<IReadOnlyList<T>> GetAsync(
+            Expression<Func<T, bool>>? predicate = null,
+            params Expression<Func<T, object>>[] includes);
         Task<T> AddAsync(T entity);
         Task UpdateAsync(T entity);
         Task DeleteAsync(T entity);

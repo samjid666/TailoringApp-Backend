@@ -1,0 +1,32 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Clean and Build Backend",
+			"type": "shell",
+			"command": "dotnet clean && dotnet build",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Clean and Build Backend",
+			"type": "shell",
+			"command": "dotnet clean ; dotnet build",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Clean Backend",
+			"type": "shell",
+			"command": "dotnet clean",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		}
+	]
+}

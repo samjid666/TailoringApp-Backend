@@ -14,6 +14,7 @@ namespace Tailoring.Infrastructure.Data
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<Measurement> Measurements => Set<Measurement>();
         public DbSet<OrderProgress> OrderProgress => Set<OrderProgress>();
+        public DbSet<User> Users => Set<User>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -56,6 +57,33 @@ namespace Tailoring.Infrastructure.Data
                       .WithMany(c => c.Measurements)
                       .HasForeignKey(e => e.CustomerId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // OrderProgress configuration
+            modelBuilder.Entity<OrderProgress>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.Order)
+                      .WithMany(o => o.ProgressUpdates)
+                      .HasForeignKey(e => e.OrderId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // User configuration
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.PasswordHash).IsRequired();
+                entity.HasIndex(e => e.Username).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique();
+
+                entity.HasOne(e => e.Customer)
+                      .WithMany()
+                      .HasForeignKey(e => e.CustomerId)
+                      .OnDelete(DeleteBehavior.SetNull);
             });
         }
 
