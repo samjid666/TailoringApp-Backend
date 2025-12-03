@@ -80,6 +80,19 @@ namespace Tailoring.API.Controllers
                 _logger.LogWarning(ex, "Validation error creating order: {Message}", ex.Message);
                 return BadRequest(new { error = ex.Message });
             }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Database error creating order. InnerException: {InnerException}",
+                    dbEx.InnerException?.Message);
+
+                var errorMessage = "An error occurred while saving the entity changes.";
+                if (dbEx.InnerException?.Message.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    errorMessage = "A customer with this email already exists. The system will use the existing customer record.";
+                }
+
+                return StatusCode(500, new { error = "Internal server error", details = errorMessage });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating order. Details: {Message}, InnerException: {InnerException}",

@@ -61,17 +61,31 @@ namespace Tailoring.Core.Services
                         throw new ArgumentException("Customer ID or customer details (FirstName, LastName, Email) are required");
                     }
 
-                    var newCustomer = new Customer
-                    {
-                        FirstName = orderDto.CustomerFirstName,
-                        LastName = orderDto.CustomerLastName,
-                        Email = orderDto.CustomerEmail,
-                        Phone = orderDto.CustomerPhone ?? string.Empty,
-                        Address = string.Empty
-                    };
+                    // Check if customer with this email already exists
+                    var existingCustomers = await _customerRepository.GetAsync(
+                        c => c.Email.ToLower() == orderDto.CustomerEmail.ToLower().Trim());
 
-                    var createdCustomer = await _customerRepository.AddAsync(newCustomer);
-                    customerId = createdCustomer.Id;
+                    if (existingCustomers.Count > 0)
+                    {
+                        // Use existing customer
+                        var existingCustomer = existingCustomers[0];
+                        customerId = existingCustomer.Id;
+                    }
+                    else
+                    {
+                        // Create new customer
+                        var newCustomer = new Customer
+                        {
+                            FirstName = orderDto.CustomerFirstName,
+                            LastName = orderDto.CustomerLastName,
+                            Email = orderDto.CustomerEmail.Trim(),
+                            Phone = orderDto.CustomerPhone ?? string.Empty,
+                            Address = string.Empty
+                        };
+
+                        var createdCustomer = await _customerRepository.AddAsync(newCustomer);
+                        customerId = createdCustomer.Id;
+                    }
                 }
 
                 // Validate DueDate
@@ -225,13 +239,19 @@ namespace Tailoring.Core.Services
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
             if (order == null)
-                throw new ArgumentException("Order not found");
+                throw new ArgumentException($"Order with ID {orderId} not found");
 
             if (!Enum.IsDefined(typeof(OrderStatus), status))
-                throw new ArgumentException("Invalid order status");
+                throw new ArgumentException($"Invalid order status: {status}. Valid values are 1-9.");
 
+            var oldStatus = order.Status;
             order.Status = (OrderStatus)status;
+            order.UpdatedAt = DateTime.UtcNow;
+
             await _orderRepository.UpdateAsync(order);
+
+            // Log status change for tracking
+            Console.WriteLine($"Order {order.OrderNumber} status changed from {oldStatus} to {order.Status}");
 
             return order;
         }
